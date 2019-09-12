@@ -51,7 +51,7 @@ resource "aws_key_pair" "tomcat_ec2_key" {
 
 
 resource "aws_instance" "TomcatServer" {
-    ami = "${lookup(var.ami, var.region)}"
+    ami = "${var.ami_id)}"
     instance_type = "${var.instance_type}"
     subnet_id = "${var.subnet_id}"
     vpc_security_group_ids = ["${aws_security_group.tomcat-security-group.id}"]

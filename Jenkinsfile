@@ -45,6 +45,17 @@ pipeline {
             }
         }
 
+        stage ('Building AMI using Packer') {
+            steps {
+                    sh '''#!/bin/bash
+                    echo This is copied via Packer template > welcome.txt
+                    echo #!/bin/bash > example.sh
+                    echo echo "This script is execute via Packer Build" >> example.sh
+                    packer build /opt/packer/pack*.json 2>&1 | tee /opt/packer/packer_output.txt
+                    '''
+            }
+        }
+
         stage ('Terraform Setup') {
             steps {
                 script {
@@ -57,14 +68,18 @@ pipeline {
         }
         stage ('Terraform Init and Plan') {
             steps {
+                sh '''#!/bin/bash
+					  AMI_ID=`tail -2 /opt/packer/output.txt | head -2 | awk 'match($0, /ami-.*/) { print substr($0, RSTART, RLENGTH) }'`
+					  echo ${AMI_ID}
+			    '''
                 sh 'terraform init $WORKSPACE'
-                sh 'terraform plan'
+                sh 'terraform plan -var 'ami_id=${AMI_ID}'
             }
         }
 
         stage ('Terraform Apply') {
             steps {
-                sh 'terraform apply --auto-approve'
+                sh 'terraform apply -var 'ami_id=${AMI_ID}'  --auto-approve'
             }
         }
 
@@ -76,11 +91,11 @@ pipeline {
                     terraform output -json tomcat_public_ip | cut -d '"' -f2 > tc_pub_ip.txt
                     terraform output -json tomcat_private_ip | cut -d '"' -f2 > tc_pri_ip.txt
                     sed -n '1p' < /opt/pup_setup_tf/ec2_private_dns.txt > pup_master_pri_dns.txt
-                    sed -n '1p' < /opt/pup_setup_tf/ec2_private_ip.txt > pup_master_pri_ip.txt                  
+                    sed -n '1p' < /opt/pup_setup_tf/ec2_private_ip.txt > pup_master_pri_ip.txt
                 """
             }
-        }    
-        
+        }
+
         stage ('Setting up puppet node on Tomcat server') {
             steps {
                 sh './tc_pup_agent_setup.sh'
