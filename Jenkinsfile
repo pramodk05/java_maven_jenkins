@@ -51,7 +51,7 @@ pipeline {
                     echo This is copied via Packer template > welcome.txt
                     echo #!/bin/bash > example.sh
                     echo echo "This script is execute via Packer Build" >> example.sh
-                    packer build /opt/packer/pack*.json 2>&1 | tee /opt/packer/packer_output.txt
+                    packer build pack*.json 2>&1 | tee packer_output.txt
                     '''
             }
         }
@@ -69,7 +69,7 @@ pipeline {
         stage ('Terraform Init and Plan') {
             steps {
 		sh '''#!/bin/bash
-					  AMI_ID=`tail -2 /opt/packer/output.txt | head -2 | awk 'match($0, /ami-.*/) { print substr($0, RSTART, RLENGTH) }'`
+					  AMI_ID=`tail -2 packer_output.txt | head -2 | awk 'match($0, /ami-.*/) { print substr($0, RSTART, RLENGTH) }'`
 					  echo ${AMI_ID}
 			    '''
                 sh 'terraform init $WORKSPACE'
