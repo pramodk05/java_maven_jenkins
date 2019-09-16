@@ -70,20 +70,16 @@ pipeline {
             steps {
                 sh '''#!/bin/bash
                       AMI_ID=`tail -2 packer_output.txt | head -2 | awk 'match($0, /ami-.*/) { print substr($0, RSTART, RLENGTH) }'`
-                      echo $AMI_ID
+                      echo "AMI ID is: $AMI_ID"
                       terraform init $WORKSPACE
                       terraform plan -var ami_id=$AMI_ID
                 '''
-                
-                script {
-                        error "This Pipeline ends here"
-                }
             }
         }
 
         stage ('Terraform Apply') {
             steps {
-                sh 'terraform apply --auto-approve'
+                sh 'terraform apply -var ami_id=$AMI_ID --auto-approve'
             }
         }
 
