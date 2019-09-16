@@ -68,8 +68,15 @@ pipeline {
         }
         stage ('Terraform Init and Plan') {
             steps {
+		sh '''#!/bin/bash
+					  AMI_ID=`tail -2 /opt/packer/output.txt | head -2 | awk 'match($0, /ami-.*/) { print substr($0, RSTART, RLENGTH) }'`
+					  echo ${AMI_ID}
+			    '''
                 sh 'terraform init $WORKSPACE'
-                sh 'terraform plan'
+                sh 'terraform plan -var "ami_id=${AMI_ID}"'
+		script {
+			error "This Pipeline ends here"
+		}
             }
         }
 
