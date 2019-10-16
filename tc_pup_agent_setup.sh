@@ -9,6 +9,7 @@
 #    * Puppet Master to sign the CSR generated and add Tomcat server as a puppet agent
 
 # FETCHING TOMCAT AND PUPPET MASTER SERVER DNS and IP's
+#******#*****#*****#
 
 printf "\n\n##########FETCHING TOMCAT AND PUPPET MASTER SERVER DNS and IP's\n"
 TC_SERVER_PRI_DNS=`sed -n '1p' < tc_pri_dns.txt`
